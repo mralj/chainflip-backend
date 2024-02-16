@@ -311,7 +311,8 @@ pub mod pallet {
 	}
 
 	impl RangeOrderSize {
-		pub fn is_zero(&self) -> bool {
+		/// Returns whether or not the maximum amount of assets contained is 0.
+		pub fn max_is_zero(&self) -> bool {
 			match self {
 				RangeOrderSize::AssetAmounts { maximum: AssetsMap { base, quote }, .. } =>
 					*base + *quote,
@@ -858,8 +859,8 @@ pub mod pallet {
 
 				// Asset input and resultant liquidity changes should be consistent.
 				ensure!(
-					(size.is_zero() && liquidity_change.is_zero()) ||
-						(!size.is_zero() && !liquidity_change.is_zero()),
+					(size.max_is_zero() && liquidity_change.is_zero()) ||
+						(!size.max_is_zero() && !liquidity_change.is_zero()),
 					Error::<T>::InvalidSize
 				);
 
