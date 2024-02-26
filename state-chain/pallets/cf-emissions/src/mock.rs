@@ -16,7 +16,7 @@ use cf_traits::{
 };
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
-	parameter_types, storage,
+	derive_impl, parameter_types, storage,
 	traits::{Imbalance, UnfilteredDispatchable},
 	StorageHasher, Twox64Concat,
 };
@@ -50,6 +50,7 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 42;
 }
 
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
@@ -168,9 +169,11 @@ impl Broadcaster<MockEthereum> for MockBroadcast {
 	type ApiCall = MockUpdateFlipSupply;
 	type Callback = MockCallback;
 
-	fn threshold_sign_and_broadcast(api_call: Self::ApiCall) -> BroadcastId {
+	fn threshold_sign_and_broadcast(
+		api_call: Self::ApiCall,
+	) -> (BroadcastId, ThresholdSignatureRequestId) {
 		Self::call(api_call);
-		1
+		(1, 1)
 	}
 
 	fn threshold_sign_and_broadcast_with_callback(
@@ -181,7 +184,9 @@ impl Broadcaster<MockEthereum> for MockBroadcast {
 		unimplemented!()
 	}
 
-	fn threshold_sign_and_broadcast_rotation_tx(_api_call: Self::ApiCall) -> BroadcastId {
+	fn threshold_sign_and_broadcast_rotation_tx(
+		_api_call: Self::ApiCall,
+	) -> (BroadcastId, ThresholdSignatureRequestId) {
 		unimplemented!()
 	}
 
