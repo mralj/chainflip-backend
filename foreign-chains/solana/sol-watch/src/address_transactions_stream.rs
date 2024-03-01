@@ -2,10 +2,10 @@
 
 use std::{borrow::Borrow, collections::VecDeque, sync::atomic::AtomicBool, time::Duration};
 
+use cf_chains::{assets::sol::Asset, sol::SolAddress, Solana};
 use futures::{stream, Stream, TryStreamExt};
 use sol_prim::{Address, Signature, SlotNumber};
 use sol_rpc::{calls::GetSignaturesForAddress, traits::CallApi};
-use cf_chains::{assets::sol::Asset, sol::SolAddress, Solana};
 
 // NOTE: Solana default is 1000 but setting it explicitly
 const DEFAULT_PAGE_SIZE_LIMIT: usize = 1000;
@@ -91,7 +91,8 @@ where
 
 				let address_to_witness = match self.asset {
 					Asset::Sol => self.address,
-					Asset::SolUsdc => self.address, // TODO: To derive the associated token account address
+					Asset::SolUsdc => self.address, /* TODO: To derive the associated token
+					                                 * account address */
 				};
 
 				let mut history = VecDeque::new();
@@ -217,8 +218,13 @@ where
 		.map(|e| {
 			reference_signature = Some(e.signature);
 
-			e.signature
-		});
+			e
+		})
+		// skip failed transactions only after the reference signature is set. This assumes that
+		// we will never need to parse failed transactions. E.g witnessing broadcasts we shouldn't
+		// do this We could use a bool or restructure it to be more flexible
+		.filter(|e| e.err.is_none())
+		.map(|e| e.signature);
 
 	output.extend(signatures);
 

@@ -3,8 +3,8 @@ use std::{collections::HashMap, str::FromStr};
 use jsonrpsee::rpc_params;
 use serde_json::json;
 
-use sol_prim::{Address, Amount, Signature, SlotNumber};
 use cf_chains::assets::sol::Asset;
+use sol_prim::{Address, Amount, Signature, SlotNumber};
 
 use super::GetTransaction;
 use crate::{
@@ -107,31 +107,38 @@ impl Transaction {
 	pub fn balances(&self, address: &Address, asset: Asset) -> Option<(Amount, Amount)> {
 		let account_idx =
 			self.transaction.message.account_keys.iter().position(|a| a == address)?;
-			match asset {
-				Asset::Sol => Some((
-					self.meta.pre_balances.get(account_idx).copied()?,
-					self.meta.post_balances.get(account_idx).copied()?,
-				)),
-				Asset::SolUsdc => {
-					// TODO: This should be pulled by the Engine, not hardcoded.
-					let hardcoded_mint_account = JsValue::from_str("24PNhTaNtomHhoy3fTRaMhAFCRj4uHqhZEEoWrKDbR5p").unwrap();
-					Some((
-						self.meta.pre_token_balances.as_ref()
+		match asset {
+			Asset::Sol => Some((
+				self.meta.pre_balances.get(account_idx).copied()?,
+				self.meta.post_balances.get(account_idx).copied()?,
+			)),
+			Asset::SolUsdc => {
+				// TODO: The USDC should be pulled by the Engine, not hardcoded.
+				let hardcoded_mint_pubkey =
+					JsValue::from_str("24PNhTaNtomHhoy3fTRaMhAFCRj4uHqhZEEoWrKDbR5p").unwrap();
+				Some((
+					self.meta
+						.pre_token_balances
+						.as_ref()
 						.and_then(|balances| {
-							balances.iter()
-								.find(|balance| balance.mint == hardcoded_mint_account)
+							balances
+								.iter()
+								.find(|balance| balance.mint == hardcoded_mint_pubkey)
 								.map(|balance| balance.ui_token_amount.ui_amount.clone())
 						})
 						.unwrap_or(0),
-						self.meta.post_token_balances.as_ref()
+					self.meta
+						.post_token_balances
+						.as_ref()
 						.and_then(|balances| {
-							balances.iter()
-								.find(|balance| balance.mint == hardcoded_mint_account)
+							balances
+								.iter()
+								.find(|balance| balance.mint == hardcoded_mint_pubkey)
 								.map(|balance| balance.ui_token_amount.ui_amount.clone())
 						})
 						.unwrap_or(0),
-					))
-					}
-				}
+				))
+			},
+		}
 	}
 }

@@ -1,9 +1,9 @@
 use std::{fmt, future::Future, pin::Pin, task::Poll};
 
+use cf_chains::assets::sol::Asset;
 use futures::{FutureExt, Stream, TryStream};
 use sol_prim::{Address, Amount, Signature, SlotNumber};
 use sol_rpc::{calls::GetTransaction, traits::CallApi};
-use cf_chains::assets::sol::Asset;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Balance {
@@ -122,7 +122,8 @@ where
 				.rpc
 				.take()
 				.expect("Invalid state: rpc hasn't been put back after being taken");
-			this.busy.set(Some(get_balance(rpc, *this.address, *this.asset, signature).boxed()));
+			this.busy
+				.set(Some(get_balance(rpc, *this.address, *this.asset, signature).boxed()));
 		})
 	}
 }

@@ -110,7 +110,7 @@ where
 			|TrackerArgs {
 			     channel_id,
 			     address,
-				 asset,
+			     asset,
 			     opened_at,
 			     expires_at,
 			     epochs: epoch_source,
@@ -238,7 +238,13 @@ where
 
 			let removed = removed_keys
 				.flat_map(|k| prev_map.get(k))
-				.map(|e| (e.deposit_channel.channel_id, e.deposit_channel.address, e.deposit_channel.asset))
+				.map(|e| {
+					(
+						e.deposit_channel.channel_id,
+						e.deposit_channel.address,
+						e.deposit_channel.asset,
+					)
+				})
 				.collect();
 
 			async move { Some(DepositAddressesUpdate { added, removed }) }
@@ -304,8 +310,8 @@ where
 		.map_err(anyhow::Error::from)
 		.ensure_balance_continuity(SOLANA_SIGNATURES_FOR_TRANSACTION_PAGE_SIZE)
 		.try_zip_latest(epoch_stream)
-		.map_ok(move |(balance, epoch)| (channel_id, address,asset, epoch, balance))
-		.inspect_ok(move |(channel_id, address, asset,epoch, balance)| {
+		.map_ok(move |(balance, epoch)| (channel_id, address, asset, epoch, balance))
+		.inspect_ok(move |(channel_id, address, asset, epoch, balance)| {
 			tracing::debug!(
 				"deposit-address tracker #{} [addr: {}, asset: {:?}, lifetime: {}, balance: {:?}]",
 				channel_id,
