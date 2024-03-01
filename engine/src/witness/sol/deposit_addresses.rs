@@ -59,11 +59,12 @@ where
 		.scan(HashMap::<ChannelId, Arc<AtomicBool>>::new(), |kill_switches, update| {
 			let sol_client = Arc::clone(&sol_client);
 
-			for (channel_id, address) in update.removed {
+			for (channel_id, address, asset) in update.removed {
 				tracing::info!(
-					"shutting down a deposit-address tracking for #{}: {}",
+					"shutting down a deposit-address tracking for #{}: {}, {:?}",
 					channel_id,
-					address
+					address,
+					asset
 				);
 
 				if let Some(kill_switch) = kill_switches.remove(&channel_id) {
@@ -83,7 +84,7 @@ where
 			let added_streams_arguments = update
 				.added
 				.into_iter()
-				.map(|(channel_id, address, opened_at, expires_at)| {
+				.map(|(channel_id, address, asset, opened_at, expires_at)| {
 					let epoch_source = epoch_source.clone();
 					let sol_client = Arc::clone(&sol_client);
 					let kill_switch = Arc::new(AtomicBool::default());
@@ -92,6 +93,7 @@ where
 					TrackerArgs {
 						channel_id,
 						address,
+						asset,
 						opened_at,
 						expires_at,
 						epochs: epoch_source,
@@ -108,6 +110,7 @@ where
 			|TrackerArgs {
 			     channel_id,
 			     address,
+				 asset,
 			     opened_at,
 			     expires_at,
 			     epochs: epoch_source,
@@ -118,6 +121,7 @@ where
 				TrackerArgs {
 					channel_id,
 					address,
+					asset,
 					opened_at,
 					expires_at,
 					epochs: epoch_stream,
@@ -135,21 +139,22 @@ where
 		.flatten_unordered(None)
 		// The failures are inspected and reported above
 		.filter_map(|r| async move { r.ok() })
-		.for_each(|(channel_id, address, epoch, balance)| {
+		.for_each(|(channel_id, address, asset, epoch, balance)| {
 			let process_call = &process_call;
 			async move {
 				if let Some(deposited_amount) = balance.deposited() {
 					tracing::info!(
-						"  witnessing a deposit at #{}: +{} lamports; [addr: {}; tx: {}]",
+						"  witnessing a deposit at #{}: +{} lamports; [addr: {}; asset: {:?} tx: {}]",
 						channel_id,
 						deposited_amount,
 						address,
+						asset,
 						balance.signature,
 					);
 
 					let deposit_witness = DepositWitness::<Solana> {
 						deposit_address: address,
-						asset: Asset::Sol,
+						asset,
 						amount: deposited_amount,
 						deposit_details: (),
 					};
@@ -173,8 +178,8 @@ where
 
 #[derive(Debug, Clone)]
 struct DepositAddressesUpdate<
-	Added = (ChannelId, SolAddress, SlotNumber, SlotNumber),
-	Removed = (ChannelId, SolAddress),
+	Added = (ChannelId, SolAddress, Asset, SlotNumber, SlotNumber),
+	Removed = (ChannelId, SolAddress, Asset),
 > {
 	pub added: Vec<Added>,
 	pub removed: Vec<Removed>,
@@ -224,6 +229,7 @@ where
 					(
 						e.deposit_channel.channel_id,
 						e.deposit_channel.address,
+						e.deposit_channel.asset,
 						e.opened_at,
 						e.expires_at,
 					)
@@ -232,7 +238,7 @@ where
 
 			let removed = removed_keys
 				.flat_map(|k| prev_map.get(k))
-				.map(|e| (e.deposit_channel.channel_id, e.deposit_channel.address))
+				.map(|e| (e.deposit_channel.channel_id, e.deposit_channel.address, e.deposit_channel.asset))
 				.collect();
 
 			async move { Some(DepositAddressesUpdate { added, removed }) }
@@ -242,6 +248,7 @@ where
 struct TrackerArgs<SolanaClient, Ep> {
 	channel_id: ChannelId,
 	address: SolAddress,
+	asset: Asset,
 	opened_at: SlotNumber,
 	expires_at: SlotNumber,
 	epochs: Ep,
@@ -253,26 +260,28 @@ fn single_deposit_address_stream<EpochStream, SolanaClient, EpochI, EpochHI>(
 	TrackerArgs {
 		channel_id,
 		address,
+		asset,
 		opened_at,
 		expires_at,
 		epochs: epoch_stream,
 		sol_client,
 		kill_switch,
 	}: TrackerArgs<SolanaClient, EpochStream>,
-) -> impl Stream<Item = Result<(ChannelId, SolAddress, Epoch<EpochI, EpochHI>, Balance)>> + Send
+) -> impl Stream<Item = Result<(ChannelId, SolAddress, Asset, Epoch<EpochI, EpochHI>, Balance)>> + Send
 where
 	EpochStream: Stream<Item = Epoch<EpochI, EpochHI>> + Send + Sized,
 	SolanaClient: SolanaApi + Send + Sync + 'static,
 	Epoch<EpochI, EpochHI>: Send + Sync + Clone + 'static,
 {
 	tracing::info!(
-		"starting up a deposit-address tracking for #{}: {} [{}..{}]",
+		"starting up a deposit-address tracking for #{}: {} {:?} [{}..{}]",
 		channel_id,
 		address,
+		asset,
 		opened_at,
 		expires_at,
 	);
-	AddressSignatures::new(Arc::clone(&sol_client), address, kill_switch)
+	AddressSignatures::new(Arc::clone(&sol_client), address, asset, kill_switch)
 		.page_size_limit(SOLANA_SIGNATURES_FOR_TRANSACTION_PAGE_SIZE)
 		.poll_interval(SOLANA_SIGNATURES_FOR_TRANSACTION_POLL_INTERVAL)
 		// // TODO: find a way to start from where we may have left. We probably have two options:
@@ -291,25 +300,27 @@ where
 				tracing::debug!("AddressSignatures has returned a duplicate tx-id: {}", tx_id);
 			},
 		)
-		.fetch_balances(Arc::clone(&sol_client), address)
+		.fetch_balances(Arc::clone(&sol_client), address, asset)
 		.map_err(anyhow::Error::from)
 		.ensure_balance_continuity(SOLANA_SIGNATURES_FOR_TRANSACTION_PAGE_SIZE)
 		.try_zip_latest(epoch_stream)
-		.map_ok(move |(balance, epoch)| (channel_id, address, epoch, balance))
-		.inspect_ok(move |(channel_id, address, epoch, balance)| {
+		.map_ok(move |(balance, epoch)| (channel_id, address,asset, epoch, balance))
+		.inspect_ok(move |(channel_id, address, asset,epoch, balance)| {
 			tracing::debug!(
-				"deposit-address tracker #{} [addr: {}, lifetime: {}, balance: {:?}]",
+				"deposit-address tracker #{} [addr: {}, asset: {:?}, lifetime: {}, balance: {:?}]",
 				channel_id,
 				address,
+				asset,
 				epoch.index,
 				balance
 			)
 		})
 		.inspect_err(move |reason| {
 			tracing::warn!(
-				"Failure on deposit-address tracker #{} [addr: {}; lifetime: {}..{}]: {}",
+				"Failure on deposit-address tracker #{} [addr: {}; asset: {:?} lifetime: {}..{}]: {}",
 				channel_id,
 				address,
+				asset,
 				opened_at,
 				expires_at,
 				reason

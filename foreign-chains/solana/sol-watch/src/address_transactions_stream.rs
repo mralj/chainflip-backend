@@ -5,6 +5,7 @@ use std::{borrow::Borrow, collections::VecDeque, sync::atomic::AtomicBool, time:
 use futures::{stream, Stream, TryStreamExt};
 use sol_prim::{Address, Signature, SlotNumber};
 use sol_rpc::{calls::GetSignaturesForAddress, traits::CallApi};
+use cf_chains::{assets::sol::Asset, sol::SolAddress, Solana};
 
 // NOTE: Solana default is 1000 but setting it explicitly
 const DEFAULT_PAGE_SIZE_LIMIT: usize = 1000;
@@ -13,6 +14,7 @@ const DEFAULT_POLL_INTERVAL: Duration = Duration::from_secs(5);
 pub struct AddressSignatures<Api, K> {
 	call_api: Api,
 	address: Address,
+	asset: Asset,
 	starting_with_slot: Option<SlotNumber>,
 	ending_with_slot: Option<SlotNumber>,
 	until_transaction: Option<Signature>,
@@ -24,10 +26,11 @@ pub struct AddressSignatures<Api, K> {
 }
 
 impl<Api, K> AddressSignatures<Api, K> {
-	pub fn new(call_api: Api, address: Address, kill_switch: K) -> Self {
+	pub fn new(call_api: Api, address: Address, asset: Asset, kill_switch: K) -> Self {
 		Self {
 			call_api,
 			address,
+			asset,
 			starting_with_slot: None,
 			ending_with_slot: None,
 			until_transaction: None,
@@ -86,11 +89,16 @@ where
 			State::GetHistory(sleep, last_signature) => {
 				tokio::time::sleep(sleep).await;
 
+				let address_to_witness = match self.asset {
+					Asset::Sol => self.address,
+					Asset::SolUsdc => self.address, // TODO: To derive the associated token account address
+				};
+
 				let mut history = VecDeque::new();
 				get_transaction_history(
 					&self.call_api,
 					&mut history,
-					self.address,
+					address_to_witness,
 					self.starting_with_slot,
 					self.ending_with_slot,
 					last_signature,

@@ -11168,6 +11168,7 @@ name = "sol-rpc"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "cf-chains",
  "jsonrpsee 0.16.3",
  "serde",
  "serde_json",
@@ -11180,6 +11181,7 @@ dependencies = [
 name = "sol-watch"
 version = "0.1.0"
 dependencies = [
+ "cf-chains",
  "futures",
  "jsonrpsee 0.16.3",
  "pin-project",

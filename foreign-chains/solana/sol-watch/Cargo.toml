@@ -16,6 +16,7 @@ tokio = {version = "^1", features = ["time"]}
 
 sol-prim = {path = "../sol-prim"}
 sol-rpc = {path = "../sol-rpc"}
+cf-chains = { path = "../../../state-chain/chains" }
 
 [dev-dependencies]
 jsonrpsee = {version = "^0.16.2", features = ["full"]}

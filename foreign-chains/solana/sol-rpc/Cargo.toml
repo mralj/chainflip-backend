@@ -10,6 +10,7 @@ default = []
 
 [dependencies]
 sol-prim = {path = "../sol-prim", default-features = false, features = ["str", "serde", "std-error"]}
+cf-chains = { path = "../../../state-chain/chains" }
 
 async-trait = "^0.1"
 jsonrpsee = {version = "^0.16.2", features = ["full"]}

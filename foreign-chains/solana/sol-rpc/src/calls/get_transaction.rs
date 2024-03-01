@@ -1,9 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use jsonrpsee::rpc_params;
 use serde_json::json;
 
 use sol_prim::{Address, Amount, Signature, SlotNumber};
+use cf_chains::assets::sol::Asset;
 
 use super::GetTransaction;
 use crate::{
@@ -50,7 +51,7 @@ pub struct TokenBalance {
 pub struct UiTokenAmount {
 	pub amount: JsValue,
 	pub decimals: u64,
-	pub ui_amount_string: JsValue,
+	pub ui_amount: Amount,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -103,12 +104,34 @@ impl Transaction {
 		self.transaction.message.account_keys.iter()
 	}
 
-	pub fn balances(&self, address: &Address) -> Option<(Amount, Amount)> {
+	pub fn balances(&self, address: &Address, asset: Asset) -> Option<(Amount, Amount)> {
 		let account_idx =
 			self.transaction.message.account_keys.iter().position(|a| a == address)?;
-		Some((
-			self.meta.pre_balances.get(account_idx).copied()?,
-			self.meta.post_balances.get(account_idx).copied()?,
-		))
+			match asset {
+				Asset::Sol => Some((
+					self.meta.pre_balances.get(account_idx).copied()?,
+					self.meta.post_balances.get(account_idx).copied()?,
+				)),
+				Asset::SolUsdc => {
+					// TODO: This should be pulled by the Engine, not hardcoded.
+					let hardcoded_mint_account = JsValue::from_str("24PNhTaNtomHhoy3fTRaMhAFCRj4uHqhZEEoWrKDbR5p").unwrap();
+					Some((
+						self.meta.pre_token_balances.as_ref()
+						.and_then(|balances| {
+							balances.iter()
+								.find(|balance| balance.mint == hardcoded_mint_account)
+								.map(|balance| balance.ui_token_amount.ui_amount.clone())
+						})
+						.unwrap_or(0),
+						self.meta.post_token_balances.as_ref()
+						.and_then(|balances| {
+							balances.iter()
+								.find(|balance| balance.mint == hardcoded_mint_account)
+								.map(|balance| balance.ui_token_amount.ui_amount.clone())
+						})
+						.unwrap_or(0),
+					))
+					}
+				}
 	}
 }

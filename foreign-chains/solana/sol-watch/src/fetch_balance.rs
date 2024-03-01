@@ -3,6 +3,7 @@ use std::{fmt, future::Future, pin::Pin, task::Poll};
 use futures::{FutureExt, Stream, TryStream};
 use sol_prim::{Address, Amount, Signature, SlotNumber};
 use sol_rpc::{calls::GetTransaction, traits::CallApi};
+use cf_chains::assets::sol::Asset;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Balance {
@@ -25,12 +26,13 @@ pub trait FetchBalancesStreamExt: TryStream<Ok = Signature> + Sized {
 		self,
 		rpc: Rpc,
 		address: Address,
+		asset: Asset,
 	) -> FetchBalances<'a, Self, Rpc, Rpc::Error>
 	where
 		Rpc: CallApi + 'a,
 		Self::Error: From<Rpc::Error>,
 	{
-		FetchBalances::new(self, rpc, address)
+		FetchBalances::new(self, rpc, address, asset)
 	}
 }
 
@@ -48,6 +50,7 @@ pub struct FetchBalances<'a, S, C, E> {
 	rpc: Option<C>,
 
 	address: Address,
+	asset: Asset,
 }
 
 impl Discrepancy {
@@ -59,9 +62,9 @@ impl Discrepancy {
 }
 
 impl<'a, S, C, E> FetchBalances<'a, S, C, E> {
-	pub fn new(inner: S, rpc: C, address: Address) -> Self {
+	pub fn new(inner: S, rpc: C, address: Address, asset: Asset) -> Self {
 		let rpc = Some(rpc);
-		Self { inner, rpc, address, prev: None, busy: None }
+		Self { inner, rpc, address, asset, prev: None, busy: None }
 	}
 }
 
@@ -119,7 +122,7 @@ where
 				.rpc
 				.take()
 				.expect("Invalid state: rpc hasn't been put back after being taken");
-			this.busy.set(Some(get_balance(rpc, *this.address, signature).boxed()));
+			this.busy.set(Some(get_balance(rpc, *this.address, *this.asset, signature).boxed()));
 		})
 	}
 }
@@ -152,13 +155,14 @@ impl Balance {
 async fn get_balance<Rpc>(
 	rpc: Rpc,
 	address: Address,
+	asset: Asset,
 	signature: Signature,
 ) -> Result<(Rpc, Option<Balance>), Rpc::Error>
 where
 	Rpc: CallApi,
 {
 	let response = rpc.call(GetTransaction::for_signature(signature)).await?;
-	let Some((before, after)) = response.balances(&address) else { return Ok((rpc, None)) };
+	let Some((before, after)) = response.balances(&address, asset) else { return Ok((rpc, None)) };
 	let balance =
 		Balance { signature, slot: response.slot, before, after, discrepancy: Default::default() };
 	Ok((rpc, Some(balance)))
