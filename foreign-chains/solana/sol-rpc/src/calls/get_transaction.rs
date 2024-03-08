@@ -115,9 +115,10 @@ impl Transaction {
 			Asset::SolUsdc => {
 				// TODO: The USDC should be pulled by the Engine, not hardcoded.
 				// TODO: Maybe instead of using "find" use the account_idx checking it's correct
-				// TODO: We should probably also check that the of the ATA to be a particular address (our pda).
-				//       If the address is correct (pda_ata), the mint_pubkey is correct and the owner (pda) is
-				//       correct then it must be correct and derived according to associated token account.
+				// TODO: In theory if we check that the address is correct (pda_ata) and that the
+				// mintPubkey is correct then it shouldn't be necessary to check the owner of the
+				// pda_ata to be the pda (deposit channel for ingress). It might be better to do it
+				// for safety.
 				let hardcoded_mint_pubkey =
 					JsValue::from_str("24PNhTaNtomHhoy3fTRaMhAFCRj4uHqhZEEoWrKDbR5p").unwrap();
 				Some((
