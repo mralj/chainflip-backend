@@ -155,6 +155,7 @@ impl EthRpcSigningClient {
 			Instant::now().checked_duration_since(nonce.requested_at).unwrap_or_default() >
 				NONCE_LIFETIME
 		}) {
+			tracing::debug!("Resetting nonce due to timeout");
 			*nonce_info_lock = None;
 		}
 
@@ -162,6 +163,7 @@ impl EthRpcSigningClient {
 		let nonce_info = match nonce_info_lock.as_mut() {
 			Some(nonce_info) => nonce_info,
 			None => {
+				tracing::debug!("Fetching new nonce");
 				let tx_count = self
 					.signer
 					.get_transaction_count(self.address(), Some(BlockNumber::Pending.into()))
