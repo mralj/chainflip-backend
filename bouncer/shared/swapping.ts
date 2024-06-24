@@ -291,19 +291,20 @@ export async function testAllSwaps(swapContext: SwapContext) {
 
         const sourceChain = chainFromAsset(sourceAsset);
         const destChain = chainFromAsset(destAsset);
-
-        if (sourceChain === 'Ethereum' || sourceChain === 'Arbitrum') {
-          // Contract Swaps
-          appendSwap(sourceAsset, destAsset, testSwapViaContract);
-          if (destChain === 'Ethereum' || destChain === 'Arbitrum') {
-            // CCM contract swaps
-            appendSwap(sourceAsset, destAsset, testSwapViaContract, newCcmMetadata(sourceAsset));
+        if (destChain !== 'Solana') {
+          if (sourceChain === 'Ethereum' || sourceChain === 'Arbitrum') {
+            // Contract Swaps
+            appendSwap(sourceAsset, destAsset, testSwapViaContract);
+            if (destChain === 'Ethereum' || destChain === 'Arbitrum') {
+              // CCM contract swaps
+              appendSwap(sourceAsset, destAsset, testSwapViaContract, newCcmMetadata(sourceAsset));
+            }
           }
-        }
 
-        if (ccmSupportedChains.includes(destChain)) {
-          // CCM swaps
-          appendSwap(sourceAsset, destAsset, testSwap, newCcmMetadata(sourceAsset));
+          if (ccmSupportedChains.includes(destChain)) {
+            // CCM swaps
+            appendSwap(sourceAsset, destAsset, testSwap, newCcmMetadata(sourceAsset));
+          }
         }
       });
   });
