@@ -167,8 +167,6 @@ export function assetDecimals(asset: Asset): number {
 }
 
 export function chainContractId(chain: Chain): number {
-  // TODO: Remove once SDK is completed
-  if (chain === 'Solana') return 5;
   if (isSDKChain(chain)) return chainConstants[chain].contractId;
   throw new Error(`Unsupported chain: ${chain}`);
 }
