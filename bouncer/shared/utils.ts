@@ -38,8 +38,8 @@ export const snowWhiteMutex = new Mutex();
 
 export const ccmSupportedChains = ['Ethereum', 'Arbitrum', 'Solana'] as Chain[];
 
-export type Asset = SDKAsset | 'Sol' | 'SolUsdc';
-export type Chain = SDKChain | 'Solana';
+export type Asset = SDKAsset;
+export type Chain = SDKChain;
 
 const isSDKAsset = (asset: Asset): asset is SDKAsset => asset in assetConstants;
 const isSDKChain = (chain: Chain): chain is SDKChain => chain in chainConstants;
@@ -158,21 +158,18 @@ export function defaultAssetAmounts(asset: Asset): string {
 
 export function assetContractId(asset: Asset): number {
   if (isSDKAsset(asset)) return assetConstants[asset].contractId;
-  if (asset === 'Sol') return 9;
-  if (asset === 'SolUsdc') return 10;
   throw new Error(`Unsupported asset: ${asset}`);
 }
 
 export function assetDecimals(asset: Asset): number {
   if (isSDKAsset(asset)) return assetConstants[asset].decimals;
-  if (asset === 'Sol') return 9;
-  if (asset === 'SolUsdc') return 6;
   throw new Error(`Unsupported asset: ${asset}`);
 }
 
 export function chainContractId(chain: Chain): number {
-  if (isSDKChain(chain)) return chainConstants[chain].contractId;
+  // TODO: Remove once SDK is completed
   if (chain === 'Solana') return 5;
+  if (isSDKChain(chain)) return chainConstants[chain].contractId;
   throw new Error(`Unsupported chain: ${chain}`);
 }
 
@@ -186,6 +183,8 @@ export function chainGasAsset(chain: Chain): Asset {
       return Assets.Dot;
     case 'Arbitrum':
       return Assets.ArbEth;
+    case 'Solana':
+      return Assets.Sol;
     default:
       throw new Error(`Unsupported chain: ${chain}`);
   }
@@ -250,7 +249,7 @@ export const deferredPromise = <T>(): {
   return { promise, resolve: resolve!, reject: reject! };
 };
 
-export { sleep };
+export { sleep, getChainflipApi };
 
 export const polkadotSigningMutex = new Mutex();
 
@@ -262,6 +261,8 @@ export function ingressEgressPalletForChain(chain: Chain) {
     case 'Bitcoin':
     case 'Polkadot':
     case 'Arbitrum':
+      return `${toLowerCase(chain)}IngressEgress` as const;
+    case 'Solana':
       return `${toLowerCase(chain)}IngressEgress` as const;
     default:
       throw new Error(`Unsupported chain: ${chain}`);

@@ -30,6 +30,8 @@ export async function depositLiquidity(
   const lpUri = lpKey ?? (process.env.LP_URI || '//LP_1');
   const lp = keyring.createFromUri(lpUri);
 
+  console.log('chainFromAsset(ccy)', chainFromAsset(ccy));
+  console.log('chainContractId(chainFromAsset(ccy))', chainContractId(chainFromAsset(ccy)));
   // If no liquidity refund address is registered, then do that now
   if (
     (
@@ -50,7 +52,6 @@ export async function depositLiquidity(
         .signAndSend(lp, { nonce: -1 }, handleSubstrateError(chainflip));
     });
   }
-
   let eventHandle = observeEvent('liquidityProvider:LiquidityDepositAddressReady', {
     test: (event) => event.data.asset === ccy && event.data.accountId === lp.address,
   }).event;
