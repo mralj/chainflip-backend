@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@chainflip/cli':
-        specifier: 1.4.0-solana.0
-        version: 1.4.0-solana.0(@chainflip/utils@0.2.1)(axios@1.3.5)(ethers@6.8.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        specifier: 1.4.0-solana.2
+        version: 1.4.0-solana.2(axios@1.3.5)(bufferutil@4.0.8)(ethers@6.8.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(utf-8-validate@5.0.10)
       '@iarna/toml':
         specifier: ^2.2.5
         version: 2.2.5
@@ -134,16 +134,24 @@ packages:
     resolution: {integrity: sha512-0CX6F+BI2s9dkUqr08KFrAIZgNFj75rdBU/DjCyYLIaV/quFjkk6T+EJ2LkZHyZTbEV4L5p97mNkUsHl2wLFAw==}
     engines: {node: '>=6.9.0'}
 
-  '@chainflip/cli@1.4.0-solana.0':
-    resolution: {integrity: sha512-pGmZxtaVVdNF98haoKxsnM3DKAB7MwHr3DeUoQtemd3o9fZbAT7uep38GGhLSnT/O4IzkUigGzvenF4IvHEndg==}
+  '@chainflip/bitcoin@0.2.2':
+    resolution: {integrity: sha512-45WfB9VTeAltbAz1GscDcYJISx3kUDY0e3R6a02X5+EbsMsZzaqyCeEFRWTvzsYeRewTB69VEHY5+7jJos7Q5g==}
+
+  '@chainflip/cli@1.4.0-solana.2':
+    resolution: {integrity: sha512-zTtzRC+V2DXt3pwLJL2RG1k/sLJmxjfw0INUwwg83sb7yPQAng9YCFw1AfJ9y0JtThhrCko7UP1peTEgsjMwag==}
     hasBin: true
     peerDependencies:
-      '@chainflip/utils': ^0.2.1
       axios: ^1.x
       ethers: ^6.x
 
+  '@chainflip/rpc@1.4.9':
+    resolution: {integrity: sha512-G7RdngKmK0mv87ulgUfh5T/4VEKJOulrZSK8UrAgDKCFV4R7e8MSyq7oRn9dLdvGLaQu10ValB/7ZIMbbvsC0w==}
+
   '@chainflip/utils@0.2.1':
     resolution: {integrity: sha512-LeAGM+rTf2YUBA5FVrIWTwoGsvzh7/6wMsF48T1DgNXu9GNy859+BPWCEP5zPiLCukGS8qpSEKYN1Pt7ChJreg==}
+
+  '@chainflip/utils@0.3.0':
+    resolution: {integrity: sha512-csW8E3lRcSG1udN/kgsOhjZ7bfRrSbgv8Hdh/pzjM+VjQ6Hh46/LuiZHeQR0rQMimfG+lu2Afxk4jeRXRGFWTg==}
 
   '@esbuild/aix-ppc64@0.19.12':
     resolution: {integrity: sha512-bmoCYyWdEL3wDQIVbcyzRyeKLgk2WtWLTWz1ZIAZF/EGbNOwSA6ew3PftJ1PqMiOOGu0OyFMzG53L0zqIpPeNA==}
@@ -3042,6 +3050,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.17.1:
+    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   ws@8.5.0:
     resolution: {integrity: sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==}
     engines: {node: '>=10.0.0'}
@@ -3096,6 +3116,9 @@ packages:
   zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
 
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+
 snapshots:
 
   '@aashutoshrathi/word-wrap@1.2.6': {}
@@ -3106,17 +3129,32 @@ snapshots:
     dependencies:
       regenerator-runtime: 0.14.1
 
-  '@chainflip/cli@1.4.0-solana.0(@chainflip/utils@0.2.1)(axios@1.3.5)(ethers@6.8.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+  '@chainflip/bitcoin@0.2.2': {}
+
+  '@chainflip/cli@1.4.0-solana.2(axios@1.3.5)(bufferutil@4.0.8)(ethers@6.8.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(utf-8-validate@5.0.10)':
     dependencies:
+      '@chainflip/bitcoin': 0.2.2
+      '@chainflip/rpc': 1.4.9
       '@chainflip/utils': 0.2.1
       axios: 1.3.5
       ethers: 6.8.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       ioredis: 5.4.1
+      rxjs: 7.8.1
+      ws: 8.17.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       yargs: 17.7.2
     transitivePeerDependencies:
+      - bufferutil
       - supports-color
+      - utf-8-validate
+
+  '@chainflip/rpc@1.4.9':
+    dependencies:
+      '@chainflip/utils': 0.3.0
+      zod: 3.23.8
 
   '@chainflip/utils@0.2.1': {}
+
+  '@chainflip/utils@0.3.0': {}
 
   '@esbuild/aix-ppc64@0.19.12':
     optional: true
@@ -6825,6 +6863,11 @@ snapshots:
       bufferutil: 4.0.8
       utf-8-validate: 5.0.10
 
+  ws@8.17.1(bufferutil@4.0.8)(utf-8-validate@5.0.10):
+    optionalDependencies:
+      bufferutil: 4.0.8
+      utf-8-validate: 5.0.10
+
   ws@8.5.0(bufferutil@4.0.8)(utf-8-validate@5.0.10):
     optionalDependencies:
       bufferutil: 4.0.8
@@ -6876,3 +6919,5 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zod@3.22.4: {}
+
+  zod@3.23.8: {}
