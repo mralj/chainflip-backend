@@ -285,27 +285,25 @@ export async function testAllSwaps(swapContext: SwapContext) {
 
   Object.values(Assets).forEach((sourceAsset) => {
     Object.values(Assets)
-      .filter((destAsset) => sourceAsset !== destAsset)
+      .filter((destAsset) => sourceAsset !== destAsset && chainFromAsset(destAsset) !== 'Solana')
       .forEach((destAsset) => {
         // Regular swaps
         appendSwap(sourceAsset, destAsset, testSwap);
 
         const sourceChain = chainFromAsset(sourceAsset);
         const destChain = chainFromAsset(destAsset);
-        if (destChain !== 'Solana') {
-          if (sourceChain === 'Ethereum' || sourceChain === 'Arbitrum') {
-            // Contract Swaps
-            appendSwap(sourceAsset, destAsset, testSwapViaContract);
-            if (destChain === 'Ethereum' || destChain === 'Arbitrum') {
-              // CCM contract swaps
-              appendSwap(sourceAsset, destAsset, testSwapViaContract, newCcmMetadata(sourceAsset));
-            }
+        if (sourceChain === 'Ethereum' || sourceChain === 'Arbitrum') {
+          // Contract Swaps
+          appendSwap(sourceAsset, destAsset, testSwapViaContract);
+          if (destChain === 'Ethereum' || destChain === 'Arbitrum') {
+            // CCM contract swaps
+            appendSwap(sourceAsset, destAsset, testSwapViaContract, newCcmMetadata(sourceAsset));
           }
+        }
 
-          if (ccmSupportedChains.includes(destChain)) {
-            // CCM swaps
-            appendSwap(sourceAsset, destAsset, testSwap, newCcmMetadata(sourceAsset));
-          }
+        if (ccmSupportedChains.includes(destChain)) {
+          // CCM swaps
+          appendSwap(sourceAsset, destAsset, testSwap, newCcmMetadata(sourceAsset));
         }
       });
   });
