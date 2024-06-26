@@ -470,7 +470,7 @@ pub fn clean_foreign_chain_address(chain: ForeignChain, address: &str) -> Result
 		ForeignChain::Solana => match SolAddress::from_str(address) {
 			Ok(sol_address) => EncodedAddress::Sol(sol_address.into()),
 			Err(_) => EncodedAddress::Sol(clean_hex_address(address)?),
-		}
+		},
 	})
 }
 
