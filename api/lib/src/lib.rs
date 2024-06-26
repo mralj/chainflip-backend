@@ -656,5 +656,27 @@ mod tests {
 				anyhow!("Address is neither valid ss58: 'Invalid checksum' nor hex: 'Invalid character 'P' at position 3'").to_string(),
 			);
 		}
+		#[test]
+		fn test_sol_address_decoding() {
+			clean_foreign_chain_address(
+				ForeignChain::Solana,
+				"HGgUaHpsmZpB3pcYt8PE89imca6BQBRqYtbVQQqsso3o"
+			)
+			.unwrap();
+			assert_eq!(
+				clean_foreign_chain_address(
+					ForeignChain::Solana,
+					"0xf1bf5683e0bfb6fffacb2d8d3641faa0008b65cc296c26ec80aee5a71ddf294a"
+				)
+				.unwrap_err()
+				.to_string(),
+				anyhow!("provided string contained invalid character '0' at byte 0").to_string(),
+			);
+
+			SolAddress(hex_literal::hex!(
+				"f1bf5683e0bfb6fffacb2d8d3641faa0008b65cc296c26ec80aee5a71ddf294a"
+			));
+
+		}
 	}
 }

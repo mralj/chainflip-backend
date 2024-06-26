@@ -30,8 +30,6 @@ export async function depositLiquidity(
   const lpUri = lpKey ?? (process.env.LP_URI || '//LP_1');
   const lp = keyring.createFromUri(lpUri);
 
-  console.log('chainFromAsset(ccy)', chainFromAsset(ccy));
-  console.log('chainContractId(chainFromAsset(ccy))', chainContractId(chainFromAsset(ccy)));
   // If no liquidity refund address is registered, then do that now
   if (
     (

@@ -310,6 +310,15 @@ export async function testAllSwaps(swapContext: SwapContext) {
       });
   });
 
+  appendSwap('Sol', 'Eth', testSwap);
+  appendSwap('SolUsdc', 'Btc', testSwap);
+  appendSwap('Sol', 'Eth', testSwap);
+  appendSwap('Sol', 'ArbEth', testSwap);
+  appendSwap('SolUsdc', 'ArbUsdc', testSwap);
+  appendSwap('SolUsdc', 'Usdc', testSwap);
+
+  // appendSwap('Eth', 'Sol', testSwap);
+
   await Promise.all(allSwaps);
 
   console.log('=== Swapping test complete ===');
