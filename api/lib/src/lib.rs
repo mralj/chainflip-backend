@@ -660,7 +660,7 @@ mod tests {
 		fn test_sol_address_decoding() {
 			clean_foreign_chain_address(
 				ForeignChain::Solana,
-				"HGgUaHpsmZpB3pcYt8PE89imca6BQBRqYtbVQQqsso3o"
+				"HGgUaHpsmZpB3pcYt8PE89imca6BQBRqYtbVQQqsso3o",
 			)
 			.unwrap();
 			assert_eq!(
@@ -676,7 +676,6 @@ mod tests {
 			SolAddress(hex_literal::hex!(
 				"f1bf5683e0bfb6fffacb2d8d3641faa0008b65cc296c26ec80aee5a71ddf294a"
 			));
-
 		}
 	}
 }

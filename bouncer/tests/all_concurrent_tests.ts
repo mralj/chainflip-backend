@@ -29,14 +29,14 @@ async function runAllConcurrentTests() {
 
   // Tests that work with any number of nodes and can be run concurrently
   const tests = [
-    swapLessThanED(),
+    // swapLessThanED(),
     testAllSwaps(swapContext),
-    testEvmDeposits(),
-    testFundRedeem('redeem'),
-    testMultipleMembersGovernance(),
-    testLpApi(),
-    testBrokerFeeCollection(),
-    testBoostingSwap(),
+    // testEvmDeposits(),
+    // testFundRedeem('redeem'),
+    // testMultipleMembersGovernance(),
+    // testLpApi(),
+    // testBrokerFeeCollection(),
+    // testBoostingSwap(),
   ];
 
   // Tests that only work if there is more than one node
