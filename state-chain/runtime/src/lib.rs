@@ -1632,7 +1632,7 @@ impl_runtime_apis! {
 							})
 						}).collect()
 					)
-				})),
+				}),
 			}
 		}
 
