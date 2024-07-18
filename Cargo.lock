@@ -7573,6 +7573,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-cf-elections"
+version = "0.1.0"
+dependencies = [
+ "bitvec",
+ "cf-chains",
+ "cf-primitives",
+ "cf-traits",
+ "frame-support",
+ "frame-system",
+ "itertools 0.11.0",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 21.0.0",
+ "sp-std 8.0.0",
+]
+
+[[package]]
 name = "pallet-cf-emissions"
 version = "0.1.0"
 dependencies = [
