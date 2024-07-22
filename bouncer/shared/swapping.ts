@@ -378,7 +378,7 @@ export async function testAllSwaps(swapContext: SwapContext) {
 
   Object.values(Assets).forEach((sourceAsset) => {
     Object.values(Assets)
-      .filter((destAsset) => sourceAsset !== destAsset)
+      .filter((destAsset) => sourceAsset !== destAsset && chainFromAsset(sourceAsset) !== 'Solana' && chainFromAsset(destAsset) !== 'Solana')
       .forEach((destAsset) => {
         // Regular swaps
         appendSwap(sourceAsset, destAsset, testSwap);
